@@ -60,4 +60,5 @@ def run_algorithm(src, dest):
     print(dest_c)
     plt.xlabel("Iterations")
     plt.ylabel("Fitness Value")
-    plt.show()
+    plt.savefig("images/Iteration_vs_Fitness.jpg")
+    plt.close()
