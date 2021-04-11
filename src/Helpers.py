@@ -2,7 +2,11 @@ from src.Logger import log
 from random import random 
 from os import chdir
 from os.path import abspath, join
+from math import sqrt 
 
+def calculate_euclidean_distance(a, b):
+    return sqrt(((a[0] - b[0])**2) + ((a[1] - b[1])**2))
+    
 def generate_random_row(col):
     '''
     genarate a random row of 0 and 1 of size 'row'

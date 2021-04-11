@@ -3,6 +3,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt 
 from sklearn.cluster import KMeans
 from math import sqrt
+from Helpers import calculate_euclidean_distance
 from src.Logger import log
 from random import choice 
 
@@ -13,6 +14,8 @@ class Clusters:
         self.data = None
         self.kmeans = None
         self.candidate_nodes = None
+        self.cluster_head_count = None
+        self.base_station = None
 
     def generate_random_data(self):
         """
@@ -22,6 +25,7 @@ class Clusters:
         self.data = np.vstack(((np.random.randn(self.N - 25, 2) * 0.5 + np.array([1, 0])),
                         (np.random.randn(self.N - 15, 2) * 0.5 + np.array([1, 0])),
                         (np.random.randn(10, 2) * 0.5 + np.array([1, 0]))))
+        self.base_station = np.random.randn(3)      # The dimensions are as x, y, z
 
     def display_random_plot(self):
         """
@@ -52,6 +56,7 @@ class Clusters:
         plt.xlabel('Number of clusters')
         plt.ylabel('WCSS')
         plt.savefig("images/elbow_method.jpg")
+        plt.show()
         plt.close()
 
     def generate_cluster(self,nclusters = 3):
@@ -82,8 +87,39 @@ class Clusters:
         self.generate_random_data()
         self.display_random_plot()
         self.generate_elbow()
-        self.generate_cluster()
+
+        nclusters = int(input("Enter number of clusters : "))
+        self.cluster_head_count = nclusters
+        self.generate_cluster(nclusters=nclusters)
         self.return_candidate_nodes()
         
     def return_candidate_nodes(self):
         return self.candidate_nodes
+
+    def calculate_distance_1(self, cluster_heads):
+        """
+        Calculate and return the the average distance 
+        between a member cluster node to its cluster head node
+        """
+
+        dist1 = []
+        for cluster_head, nodes in zip(cluster_heads, self.candidate_nodes.values()):
+            total_dist = 0.0
+            for obj in nodes:
+                total_dist += calculate_euclidean_distance(nodes[cluster_head], obj)
+            dist1.append(total_dist/len(nodes))
+
+        return max(dist1)
+
+    def calculate_distance_2(self, cluster_heads):
+        """
+        Calculate and return the max distance between the cluster heads and base station
+        """
+
+        dist2 = []
+        nodes = self.candidate_nodes.values()
+        for cluster_head in cluster_heads:
+            cluster_head_dim = nodes[cluster_head]
+            dist2.append(sqrt(((cluster_head_dim[0] - self.base_station[0])**2) + ((cluster_head_dim[1] - self.base_station[1])**2) + self.base_station[2]**2))
+
+        return max(dist2)
