@@ -3,7 +3,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt 
 from sklearn.cluster import KMeans
 from math import sqrt
-from Helpers import calculate_euclidean_distance
+from src.Helpers import calculate_distance_from_base_station, calculate_euclidean_distance
 from src.Logger import log
 from random import choice 
 
@@ -78,7 +78,8 @@ class Clusters:
         plt.ylabel('Y-Axis')
         for i in range(nclusters):
             sns.scatterplot(x=self.data[y_kmeans == i, 0], y=self.data[y_kmeans == i, 1], color = "#"+''.join(choice('0123456789ABCDEF') for j in range(6)), label = f'Cluster {i}',s=50)
-        
+        print(self.base_station)
+        sns.scatterplot(x=[self.base_station[0]], y=[self.base_station[1]], color="#"+''.join(choice('0123456789ABCDEF') for j in range(6)), s=100, label='Base Station')
         log("Saving generated clusters to /images/cluster.jpg...")
         plt.savefig("images/cluster.jpg")
         plt.close()
@@ -109,6 +110,7 @@ class Clusters:
                 total_dist += calculate_euclidean_distance(nodes[cluster_head], obj)
             dist1.append(total_dist/len(nodes))
 
+        log(f"Distance 1 : {dist1}")
         return max(dist1)
 
     def calculate_distance_2(self, cluster_heads):
@@ -117,9 +119,38 @@ class Clusters:
         """
 
         dist2 = []
-        nodes = self.candidate_nodes.values()
-        for cluster_head in cluster_heads:
+        for cluster_head, nodes in zip(cluster_heads, self.candidate_nodes.values()):
             cluster_head_dim = nodes[cluster_head]
-            dist2.append(sqrt(((cluster_head_dim[0] - self.base_station[0])**2) + ((cluster_head_dim[1] - self.base_station[1])**2) + self.base_station[2]**2))
+            dist2.append(calculate_distance_from_base_station(cluster_head_dim, self.base_station))
 
+        log(f"Distance 2 : {dist2}")
         return max(dist2)
+    
+    def calculate_energy_consumed_for_cluster_nodes(self, cluster_heads, k_bits=200):
+        """
+        Calculate and return the total energy in a cluster
+        """
+
+        energy = 0.0
+        nodes_list = self.candidate_nodes.values()
+        for cluster_head, nodes in zip(cluster_heads, nodes_list):
+            cluster_head_dim = nodes[cluster_head]
+            for node in nodes:
+                energy += (500*k_bits*k_bits*(calculate_euclidean_distance(cluster_head_dim, node)**2))/(pow(10, -24))
+
+        log(f"Total Cluster Energy : {energy}")
+        return energy
+
+    def calculate_energy_consumed_for_cluster_head(self, cluster_heads, k_bits=200):
+        """
+        Calculate the energy consumed to transmit by cluster head to the base station
+        """
+        energy = 0.0
+
+        node_list = self.candidate_nodes.values()
+        for cluster_head, nodes in zip(cluster_heads, node_list):
+            cluster_head_dim = nodes[cluster_head]
+            energy += (50*0.0013*k_bits*k_bits*(calculate_distance_from_base_station(cluster_head_dim, self.base_station)**4))/(pow(10, -24))
+        
+        log(f"Total Cluster Head Energy : {energy}")
+        return energy 
