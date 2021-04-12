@@ -1,5 +1,6 @@
+from src.Helpers import get_min_index
+from src.GA import GA
 from src.SGO import SGO
-from algorithm import run_algorithm
 from src.Clusters import Clusters
 from src.Logger import log
 
@@ -13,7 +14,11 @@ if __name__ == "__main__":
     sgo_obj = SGO(n, cluster.cluster_head_count, cluster)
 
     stopping_criteria = int(input("Enter number of rounds for stopping criteria : "))
-    solution = sgo_obj.iterate(stopping_criteria=stopping_criteria)
+    sgo_solution = sgo_obj.iterate(stopping_criteria=stopping_criteria)
 
-    print(f"Solution : {solution}")
+    print(f"SGO Solution : {sgo_solution}")
 
+    ga_obj = GA(n, cluster.cluster_head_count, cluster)
+    ga_solution = ga_obj.iterate(stopping_fitness=sgo_obj._fitness_vector[get_min_index(sgo_obj._fitness_vector)])
+
+    print(f"GA Solution : {ga_solution}")

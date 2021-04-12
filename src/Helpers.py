@@ -98,3 +98,20 @@ def get_min_index(vector):
             return i
 
     return 0
+
+def get_second_min_index(vector):
+    min_index = get_min_index(vector)
+    second_min_index = 0
+    for i, val in enumerate(vector):
+        if val > vector[min_index] and val < vector[second_min_index]:
+            second_min_index = i
+
+    return second_min_index
+
+def get_max_index(vector):
+    max_val = max(vector)
+    for i, val in enumerate(vector):
+        if(max_val == val):
+            return i
+
+    return 0
